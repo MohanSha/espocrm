@@ -427,7 +427,7 @@ define('views/record/kanban', ['views/record/list'], function (Dep) {
         reOrderGroup: function (group) {
             var groupCollection = this.getGroupCollection(group);
 
-            var ids = this.getGroupOrderFromDom();
+            var ids = this.getGroupOrderFromDom(group);
 
             var modelMap = {};
 
@@ -770,6 +770,10 @@ define('views/record/kanban', ['views/record/list'], function (Dep) {
                     });
                 }, this);
             });
+        },
+
+        getDomRowItem: function (id) {
+            return this.$el.find('.item[data-id="'+id+'"]');
         },
 
         getRowContainerHtml: function (id) {
