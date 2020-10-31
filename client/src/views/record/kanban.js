@@ -177,6 +177,8 @@ define('views/record/kanban', ['views/record/list'], function (Dep) {
                 }
             }
 
+            this.orderDisabled = this.getMetadata().get(['scopes', this.scope, 'kanbanOrderDisabled']);
+
             this.statusField = this.getMetadata().get(['scopes', this.scope, 'statusField']);
 
             if (!this.statusField) {
@@ -331,7 +333,7 @@ define('views/record/kanban', ['views/record/list'], function (Dep) {
                 e.originalEvent.stopPropagation();
             }.bind(this));
 
-            var orderDisabled = false;
+            var orderDisabled = this.orderDisabled;
 
             $list.sortable({
                 connectWith: '.group-column-list',
@@ -729,7 +731,9 @@ define('views/record/kanban', ['views/record/list'], function (Dep) {
                 $item.remove();
             }
 
-            this.storeGroupOrder(group);
+            if (!this.orderDisabled) {
+                this.storeGroupOrder(group);
+            }
         },
 
         groupShowMore: function (group) {

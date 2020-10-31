@@ -47,6 +47,8 @@ class Kanban
 
     protected $countDisabled = false;
 
+    protected $orderDisabled = false;
+
     protected $searchParams = [];
 
     protected $maxSelectTextAttributeLength = null;
@@ -95,6 +97,13 @@ class Kanban
     public function setCountDisabled(bool $countDisabled) : self
     {
         $this->countDisabled = $countDisabled;
+
+        return $this;
+    }
+
+    public function setOrderDisabled(bool $orderDisabled) : self
+    {
+        $this->orderDisabled = $orderDisabled;
 
         return $this;
     }
@@ -195,7 +204,7 @@ class Kanban
                 'ASC',
             ]);
 
-            if ($this->userId) {
+            if ($this->userId && !$this->orderDisabled) {
                 $group = mb_substr($status, 0, self::MAX_GROUP_LENGTH);
 
                 $builder = $this->entityManager

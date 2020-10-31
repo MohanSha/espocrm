@@ -27,47 +27,57 @@
  * these Appropriate Legal Notices must retain the display of the "EspoCRM" word.
  ************************************************************************/
 
-namespace Espo\Controllers;
+namespace Espo\Services;
 
 use Espo\Core\{
-    Exceptions\BadRequest,
-    Api\Request,
-    ServiceFactory,
+    Exceptions\Forbidden,
+    Acl,
+    Utils\Config,
+};
+
+use Espo\{
+    Entities\User,
+    Tools\Kanban\Orderer,
 };
 
 class KanbanOrder
 {
+    protected $orderer;
+    protected $acl;
+    protected $user;
+    protected $config;
     protected $serviceFactory;
 
-    public function __construct(ServiceFactory $serviceFactory)
+    public function __construct(Orderer $orderer, Acl $acl, User $user, Config $config)
     {
-        $this->serviceFactory = $serviceFactory;
+        $this->orderer = $orderer;
+        $this->acl = $acl;
+        $this->user = $user;
+        $this->config = $config;
     }
 
-    public function postActionStore(Request $request)
+    public function order(string $entityType, string $group, array $ids)
     {
-        $data = $request->getParsedBody();
-
-        $entityType = $data->entityType;
-        $group = $data->group;
-        $ids = $data->ids;
-
-        if (empty($entityType) || !is_string($entityType)) {
-            throw new BadRequest();
+        if (!$this->acl->check($entityType, 'read')) {
+            throw new Forbidden();
         }
 
-        if (empty($group) || !is_string($group)) {
-            throw new BadRequest();
+        if ($this->user->isPortal()) {
+            throw new Forbidden();
         }
 
-        if (!is_array($ids)) {
-            throw new BadRequest();
+        $processor = $this->orderer
+            ->createProcessor()
+            ->setEntityType($entityType)
+            ->setGroup($group)
+            ->setUserId($this->user->id);
+
+        $maxOrderNumber = $this->config->get('kanbanMaxOrderNumber') ?? null;
+
+        if ($maxOrderNumber) {
+            $processor->setMaxNumber($maxOrderNumber);
         }
 
-        $this->serviceFactory
-            ->create('KanbanOrder')
-            ->order($entityType, $group, $ids);
-
-        return true;
+        $processor->order($ids);
     }
 }

@@ -211,6 +211,12 @@ class OrdererProcessor
             throw new LogicException("Not allowed entity type.");
         }
 
+        $orderDisabled = $this->metadata->get(['scopes', $this->entityType, 'kanbanOrderDisabled']);
+
+        if ($orderDisabled) {
+            throw new LogicException("Order is disabled.");
+        }
+
         $statusField = $this->metadata->get(['scopes', $this->entityType, 'statusField']);
 
         if (! $statusField) {

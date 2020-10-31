@@ -1356,6 +1356,8 @@ class Record implements Crud,
             $disableCount = true;
         }
 
+        $orderDisabled = $this->metadata->get(['scopes', $this->entityType, 'kanbanOrderDisabled']) ?? false;
+
         $this->handleListParams($params);
 
         $kanban = $this->injectableFactory->create(KanbanTool::class);
@@ -1365,10 +1367,13 @@ class Record implements Crud,
             ->setRecordService($this)
             ->setSearchParams($params)
             ->setCountDisabled($disableCount)
+            ->setOrderDisabled($orderDisabled)
             ->setMaxSelectTextAttributeLength($this->getMaxSelectTextAttributeLength())
             ->setUserId($this->getUser()->id);
 
         $maxOrderNumber = $this->getConfig()->get('kanbanMaxOrderNumber') ?? null;
+
+
 
         if ($maxOrderNumber) {
             $kanban->setMaxOrderNumber($maxOrderNumber);
