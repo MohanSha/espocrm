@@ -34,6 +34,7 @@ use Espo\Core\{
     Exceptions\BadRequest,
     Acl,
     Api\Request,
+    Utils\Config,
 };
 
 use Espo\{
@@ -46,12 +47,14 @@ class KanbanOrder
     protected $orderer;
     protected $acl;
     protected $user;
+    protected $config;
 
-    public function __construct(Orderer $orderer, Acl $acl, User $user)
+    public function __construct(Orderer $orderer, Acl $acl, User $user, Config $config)
     {
         $this->orderer = $orderer;
         $this->acl = $acl;
         $this->user = $user;
+        $this->config = $config;
     }
 
     public function postActionStore(Request $request)
@@ -70,7 +73,7 @@ class KanbanOrder
             throw new BadRequest();
         }
 
-        if (!is_array($ids)) {
+        if (! is_array($ids)) {
             throw new BadRequest();
         }
 
@@ -82,11 +85,19 @@ class KanbanOrder
             throw new Forbidden();
         }
 
-        $this->orderer
+        $processor = $this->orderer
+            ->createProcessor()
             ->setEntityType($entityType)
             ->setGroup($group)
-            ->setUserId($this->user->id)
-            ->order($ids);
+            ->setUserId($this->user->id);
+
+        $maxOrderNumber = $this->config->get('kanbanMaxOrderNumber') ?? null;
+
+        if ($maxOrderNumber) {
+            $processor->setMaxNumber($maxOrderNumber);
+        }
+
+        $processor->order($ids);
 
         return true;
     }

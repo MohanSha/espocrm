@@ -66,7 +66,7 @@ class Orderer
         return $this->createProcessor()->setMaxNumber($maxNumber);
     }
 
-    private function createProcessor() : OrdererProcessor
+    public function createProcessor() : OrdererProcessor
     {
         return new OrdererProcessor(
             $this->entityManager,

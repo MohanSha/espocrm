@@ -1360,14 +1360,21 @@ class Record implements Crud,
 
         $kanban = $this->injectableFactory->create(KanbanTool::class);
 
-        return $kanban
+        $kanban
             ->setEntityType($this->entityType)
             ->setRecordService($this)
             ->setSearchParams($params)
             ->setCountDisabled($disableCount)
             ->setMaxSelectTextAttributeLength($this->getMaxSelectTextAttributeLength())
-            ->setUserId($this->getUser()->id)
-            ->getResult();
+            ->setUserId($this->getUser()->id);
+
+        $maxOrderNumber = $this->getConfig()->get('kanbanMaxOrderNumber') ?? null;
+
+        if ($maxOrderNumber) {
+            $kanban->setMaxOrderNumber($maxOrderNumber);
+        }
+
+        return $kanban->getResult();
     }
 
     protected function getEntityEvenDeleted(string $id) : ?Entity
